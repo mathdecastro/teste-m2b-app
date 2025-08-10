@@ -11,8 +11,8 @@ if arquivo_ofertas and arquivo_tratativas:
     if st.sidebar.button('Criar relatório'):
         with st.spinner('Criando o relatório. Por favor, aguarde.'):
             # CRIANDO UM DATAFRAME PANDAS PARA CADA BASE
-            df_base_teste = pd.read_csv('C:/Users/Antonio Mailson/Desktop/projetos/m2bteste/data/base_teste.csv', sep = '|')
-            df_tratativas_teste = pd.read_csv('C:/Users/Antonio Mailson/Desktop/projetos/m2bteste/data/tratativas_teste.csv', sep = '|')
+            df_base_teste = pd.read_csv(arquivo_ofertas, sep = '|')
+            df_tratativas_teste = pd.read_csv(arquivo_tratativas, sep = '|')
 
             # FILTRANDO A BASE PARA TRAZER SOMENTE OS CONTATOS EM QUE O TELEFONE TENHA 11 DÍGITOS
             filtro_11_digitos = df_base_teste['NUM_TELEFONE'].apply(lambda numero: len(str(numero)) == 11)
