@@ -99,34 +99,38 @@ if st.session_state['df_ofertas'] is not None and st.session_state['df_tratativa
 
     with st.expander('Descrição do teste e considerações gerais'):
         st.caption("""
-            # DESCRIÇÃO DO TESTE
+            # Descrição do Teste
 
-            SELECIONAR 10.000 CASOS COM AS SEGUINTES EXIGÊNCIAS:
-            - RETIRAR CASOS EM QUE O TELEFONE É INVÁLIDO
-            - RETIRAR CASOS QUE JÁ CONVERTERAM -> FAZER UM JOIN COM A BASE DE TRATATIVAS PARA SELECIONAR OS CASOS QUE JÁ CONVERTERAM
-            - SELECIONAR OS CASOS COM AS MELHORES OFERTAS -> BASICAMENTE, SÃO CASOS EM QUE ESTAS COLUNAS TÊM OS MELHORES VALORES NESTA ORDEM: FLG_ESPECIAL > PLANO_INDICADO > DESCONTO_DESTINO > CLUSTER
+            Selecionar 10.000 casos com as seguintes exigências:
+            - Retirar casos em que o telefone é inválido;
+            - Retirar casos que já converteram -> Fazer um join com a base de tratativas para selecionar os casos que já converteram;
+            - Selecionar os casos com as melhores ofertas -> Basicamente, São os casos em que estas colunas têm os melhores valores nesta ordem: FLG_ESPECIAL > PLANO_INDICADO > DESCONTO_DESTINO > CLUSTER.
 
-            ==========================================================================================
+            # Considerações Gerais
 
-            # TELEFONE
+            ## Telefone
 
-            EM RELAÇÃO AOS NÚMEROS, CONSIDEREI QUE ELE SÓ SERÁ VÁLIDO SE, E SOMENTE SE, ATENDER OS SEGUINTES REQUISITOS:
-            - TIVER UM TOTAL DE 11 DÍGITOS. EXEMPLO: (21) 98282-3737 -> O TOTAL DE DÍGITOS DE 21982823737 É 11
-            - O CÓDIGO DE ÁREA FOR VÁLIDO. EXEMPLO: (21) 98282-3737 -> 21 É UM CÓDIGO VÁLIDO
-            - TIVER O ALGARISMO 9 NA TERCEIRA POSIÇÃO DA ESQUERDA PRA DIREITA. EXEMPLO: (21) 98282-3737 -> 21982823737 -> NA TERCEIRA POSIÇÃO, DA ESQUERDA PRA DIREITA, HÁ O ALGARISMO 9
+            Em relação aos números, considerei que ele só será válido se, e somente se, atendes os seguintes requisitos:
+            - Tiver um total de 11 dígitos. Exemplo:
+            - No número (21) 98282-3737, o total de dígitos de 21982823737 é 11;
+            - O código de área for válido. Exemplo:
+            - No número (21) 98282-3737, 21 é um código válido;
+            - Tiver o algarismo 9 na terceira posição da esquerda pra direita. Exemplo:
+            - Na terceira posição, da esquerda pra direita, do número (21) 98282-3737, há o algarismo 9.
 
-            EM RELAÇÃO AOS NÚMEROS DUPLICADOS, QUE SÓ ESTÃO PRESENTES NA BASE DE TESTE, UTILIZAREI A SEGUINTE ABORDAGEM:
-            - MANTER NA BASE O CASO EM QUE A IDADE DO CONTATO É A MAIOR -> EM DOIS CASOS COM O MESMO NÚMERO, UM CASO PODE TER A 'IDADE' CLASSIFICADA EM '31 A 45' E O OUTRO CASO PODE TER A IDADE CLASSIFICADA EM 'ACIMA DE 45'. NESTE CASO, SERÁ MANTIDO SOMENTE O CASO EM QUE A IDADE É 'ACIMA DE 45'
-            - CONSIDERANDO QUE A CLASSIFICAÇÃO DE IDADE SEJA A MESMA NOS CASOS DUPLICADOS, MANTER NA BASE O CASO EM QUE O CONTATO PELA M2B SEJA O MAIS RECENTE -> UTILIZAR 'FLG_FRESCOR' PARA ESTA REGRA
-            - EM CASOS DUPLICADOS QUE HAJA IGUALDADE NAS VARIÁVEIS 'IDADE' E 'FLG_FRESCOR', MANTER O CASO COM A MELHOR OFERTA -> FLG_ESPECIAL > PLANO_INDICADO > DESCONTO_DESTINO > CLUSTER
+            Em relação aos números duplicados, que só estão presentes na base de teste, utilizarei a seguinte abordagem:
+            - Mantes na base o caso em que a idade do contato é a maior
+            - Exemplo: Em dois casos com o mesmo número, um caso pode ter IDADE classificada em '31 A 45' e o outro caso pode ter IDADE classificada em 'ACIMA DE 45'. Neste caso, será mantido somente o caso em que a idade é 'ACIMA DE 45'.
+            - Considerando que a classificação de idade seja a mesma nos casos duplicados, manter na base o caso em que o contato pela Mobi2buy seja o mais recente.
+            - Utilizar FLG_FRESCOR para esta regra;
+            - Em casos duplicados que haja igualdade nas variáveis IDADE e FLG_FRESCOR, manter o caso com a melhor oferta nesta ordem:
+            - FLG_ESPECIAL > PLANO_INDICADO > DESCONTO_DESTINO > CLUSTER.
 
-            ==========================================================================================
+            ## Ofertas
 
-            # OFERTAS
+            Após uma análise dos dados, encontrei as seguintes relações entre colunas:
 
-            APÓS UMA ANÁLISE DOS DADOS, ENCONTREI AS SEGUINTES RELAÇÕES ENTRE COLUNAS:
-
-            Se FLG_ESPECIAL = 1:
+            Considerando FLG_ESPECIAL = 1:
 
             - Se PLANO_INDICADO = A, então:
                 - BONUS_DESTINO: 14GB
@@ -140,7 +144,7 @@ if st.session_state['df_ofertas'] is not None and st.session_state['df_tratativa
                 - BONUS_DESTINO: 20GB + 20GB
                 - DESCONTO_DESTINO: 25 NFIDEL, 28 NFIDEL, 37 NFIDEL, 40 NFIDEL, 41 NFIDEL ou 43 NFIDEL
 
-            Se FLG_ESPECIAL = 0:
+            Considerando FLG_ESPECIAL = 0:
 
             - Se PLANO_INDICADO = C, então:
                 - BONUS_DESTINO: 20GB
