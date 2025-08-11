@@ -9,12 +9,14 @@ Motivação deste dashboard em Streamlit:
 - Grande poder de interação e coleta de insights.
 - Facilidade de construção.
 
+Uma demonstração de como utilizar este dashboard pode ser encontrada em: https://github.com/mathdecastro/teste-m2b-app/tree/main/src/testem2b.mp4
+
 # Descrição do Teste
 
 Selecionar 10.000 casos com as seguintes exigências:
 - Retirar casos em que o telefone é inválido;
 - Retirar casos que já converteram -> Fazer um join com a base de tratativas para selecionar os casos que já converteram;
-- Selecionar os casos com as melhores ofertas -> Basicamente, São os casos em que estas colunas têm os melhores valores nesta ordem: FLG_ESPECIAL > PLANO_INDICADO > DESCONTO_DESTINO > CLUSTER.
+- Selecionar os casos com as melhores ofertas -> Basicamente, são os casos em que estas colunas têm os melhores valores nesta ordem: FLG_ESPECIAL > PLANO_INDICADO > DESCONTO_DESTINO > CLUSTER.
 
 # Considerações Gerais
 
