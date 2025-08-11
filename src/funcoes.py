@@ -1,4 +1,7 @@
 import pandas as pd
+import numpy as np
+import streamlit as st
+
 
 def criar_dataframe_ofertas(dataframe_ofertas):
     """

@@ -1,6 +1,12 @@
 import pandas as pd
 from funcoes import criar_dataframe_ofertas, criar_dataframe_tratativas
+import altair as alt
 import streamlit as st
+
+if 'df_ofertas' not in st.session_state and 'df_tratativas' not in st.session_state and 'df_ofertas_10000' not in st.session_state:
+    st.session_state['df_ofertas'] = None
+    st.session_state['df_tratativas'] = None
+    st.session_state['df_ofertas_10000'] = None
 
 # TITULO
 st.sidebar.title('Teste Mobi2buy')
@@ -81,95 +87,151 @@ if arquivo_ofertas and arquivo_tratativas:
             ).reset_index(
                 drop = True
             )[:10000]
-
-        st.title('Relatório de Clientes')
         
-        with st.expander('Descrição do teste e considerações gerais'):
-            st.caption("""
-                # DESCRIÇÃO DO TESTE
+        st.session_state['df_ofertas'] = df_ofertas
+        st.session_state['df_tratativas'] = df_tratativas
+        st.session_state['df_ofertas_10000'] = df_ofertas_10000
 
-                SELECIONAR 10.000 CASOS COM AS SEGUINTES EXIGÊNCIAS:
-                - RETIRAR CASOS EM QUE O TELEFONE É INVÁLIDO
-                - RETIRAR CASOS QUE JÁ CONVERTERAM -> FAZER UM JOIN COM A BASE DE TRATATIVAS PARA SELECIONAR OS CASOS QUE JÁ CONVERTERAM
-                - SELECIONAR OS CASOS COM AS MELHORES OFERTAS -> BASICAMENTE, SÃO CASOS EM QUE ESTAS COLUNAS TÊM OS MELHORES VALORES NESTA ORDEM: FLG_ESPECIAL > PLANO_INDICADO > DESCONTO_DESTINO > CLUSTER
+if st.session_state['df_ofertas'] is not None and st.session_state['df_tratativas'] is not None and st.session_state['df_ofertas_10000'] is not None:
+    df_ofertas = st.session_state['df_ofertas']
+    df_tratativas = st.session_state['df_tratativas']
+    df_ofertas_10000 = st.session_state['df_ofertas_10000']
 
-                ==========================================================================================
+    with st.expander('Descrição do teste e considerações gerais'):
+        st.caption("""
+            # DESCRIÇÃO DO TESTE
 
-                # TELEFONE
+            SELECIONAR 10.000 CASOS COM AS SEGUINTES EXIGÊNCIAS:
+            - RETIRAR CASOS EM QUE O TELEFONE É INVÁLIDO
+            - RETIRAR CASOS QUE JÁ CONVERTERAM -> FAZER UM JOIN COM A BASE DE TRATATIVAS PARA SELECIONAR OS CASOS QUE JÁ CONVERTERAM
+            - SELECIONAR OS CASOS COM AS MELHORES OFERTAS -> BASICAMENTE, SÃO CASOS EM QUE ESTAS COLUNAS TÊM OS MELHORES VALORES NESTA ORDEM: FLG_ESPECIAL > PLANO_INDICADO > DESCONTO_DESTINO > CLUSTER
 
-                EM RELAÇÃO AOS NÚMEROS, CONSIDEREI QUE ELE SÓ SERÁ VÁLIDO SE, E SOMENTE SE, ATENDER OS SEGUINTES REQUISITOS:
-                - TIVER UM TOTAL DE 11 DÍGITOS. EXEMPLO: (21) 98282-3737 -> O TOTAL DE DÍGITOS DE 21982823737 É 11
-                - O CÓDIGO DE ÁREA FOR VÁLIDO. EXEMPLO: (21) 98282-3737 -> 21 É UM CÓDIGO VÁLIDO
-                - TIVER O ALGARISMO 9 NA TERCEIRA POSIÇÃO DA ESQUERDA PRA DIREITA. EXEMPLO: (21) 98282-3737 -> 21982823737 -> NA TERCEIRA POSIÇÃO, DA ESQUERDA PRA DIREITA, HÁ O ALGARISMO 9
+            ==========================================================================================
 
-                EM RELAÇÃO AOS NÚMEROS DUPLICADOS, QUE SÓ ESTÃO PRESENTES NA BASE DE TESTE, UTILIZAREI A SEGUINTE ABORDAGEM:
-                - MANTER NA BASE O CASO EM QUE A IDADE DO CONTATO É A MAIOR -> EM DOIS CASOS COM O MESMO NÚMERO, UM CASO PODE TER A 'IDADE' CLASSIFICADA EM '31 A 45' E O OUTRO CASO PODE TER A IDADE CLASSIFICADA EM 'ACIMA DE 45'. NESTE CASO, SERÁ MANTIDO SOMENTE O CASO EM QUE A IDADE É 'ACIMA DE 45'
-                - CONSIDERANDO QUE A CLASSIFICAÇÃO DE IDADE SEJA A MESMA NOS CASOS DUPLICADOS, MANTER NA BASE O CASO EM QUE O CONTATO PELA M2B SEJA O MAIS RECENTE -> UTILIZAR 'FLG_FRESCOR' PARA ESTA REGRA
-                - EM CASOS DUPLICADOS QUE HAJA IGUALDADE NAS VARIÁVEIS 'IDADE' E 'FLG_FRESCOR', MANTER O CASO COM A MELHOR OFERTA -> FLG_ESPECIAL > PLANO_INDICADO > DESCONTO_DESTINO > CLUSTER
+            # TELEFONE
 
-                ==========================================================================================
+            EM RELAÇÃO AOS NÚMEROS, CONSIDEREI QUE ELE SÓ SERÁ VÁLIDO SE, E SOMENTE SE, ATENDER OS SEGUINTES REQUISITOS:
+            - TIVER UM TOTAL DE 11 DÍGITOS. EXEMPLO: (21) 98282-3737 -> O TOTAL DE DÍGITOS DE 21982823737 É 11
+            - O CÓDIGO DE ÁREA FOR VÁLIDO. EXEMPLO: (21) 98282-3737 -> 21 É UM CÓDIGO VÁLIDO
+            - TIVER O ALGARISMO 9 NA TERCEIRA POSIÇÃO DA ESQUERDA PRA DIREITA. EXEMPLO: (21) 98282-3737 -> 21982823737 -> NA TERCEIRA POSIÇÃO, DA ESQUERDA PRA DIREITA, HÁ O ALGARISMO 9
 
-                # OFERTAS
+            EM RELAÇÃO AOS NÚMEROS DUPLICADOS, QUE SÓ ESTÃO PRESENTES NA BASE DE TESTE, UTILIZAREI A SEGUINTE ABORDAGEM:
+            - MANTER NA BASE O CASO EM QUE A IDADE DO CONTATO É A MAIOR -> EM DOIS CASOS COM O MESMO NÚMERO, UM CASO PODE TER A 'IDADE' CLASSIFICADA EM '31 A 45' E O OUTRO CASO PODE TER A IDADE CLASSIFICADA EM 'ACIMA DE 45'. NESTE CASO, SERÁ MANTIDO SOMENTE O CASO EM QUE A IDADE É 'ACIMA DE 45'
+            - CONSIDERANDO QUE A CLASSIFICAÇÃO DE IDADE SEJA A MESMA NOS CASOS DUPLICADOS, MANTER NA BASE O CASO EM QUE O CONTATO PELA M2B SEJA O MAIS RECENTE -> UTILIZAR 'FLG_FRESCOR' PARA ESTA REGRA
+            - EM CASOS DUPLICADOS QUE HAJA IGUALDADE NAS VARIÁVEIS 'IDADE' E 'FLG_FRESCOR', MANTER O CASO COM A MELHOR OFERTA -> FLG_ESPECIAL > PLANO_INDICADO > DESCONTO_DESTINO > CLUSTER
 
-                APÓS UMA ANÁLISE DOS DADOS, ENCONTREI AS SEGUINTES RELAÇÕES ENTRE COLUNAS:
+            ==========================================================================================
 
-                Se FLG_ESPECIAL = 1:
+            # OFERTAS
 
-                - Se PLANO_INDICADO = A, então:
-                    - BONUS_DESTINO: 14GB
-                    - DESCONTO_DESTINO: 15%
+            APÓS UMA ANÁLISE DOS DADOS, ENCONTREI AS SEGUINTES RELAÇÕES ENTRE COLUNAS:
 
-                - Se PLANO_INDICADO = L, então:
-                    - BONUS_DESTINO: 10GB + 20GB
-                    - DESCONTO_DESTINO: 17 NFIDEL ou 20 NFIDEL
+            Se FLG_ESPECIAL = 1:
 
-                - Se PLANO_INDICADO = S, então:
-                    - BONUS_DESTINO: 20GB + 20GB
-                    - DESCONTO_DESTINO: 25 NFIDEL, 28 NFIDEL, 37 NFIDEL, 40 NFIDEL, 41 NFIDEL ou 43 NFIDEL
+            - Se PLANO_INDICADO = A, então:
+                - BONUS_DESTINO: 14GB
+                - DESCONTO_DESTINO: 15%
 
-                Se FLG_ESPECIAL = 0:
+            - Se PLANO_INDICADO = L, então:
+                - BONUS_DESTINO: 10GB + 20GB
+                - DESCONTO_DESTINO: 17 NFIDEL ou 20 NFIDEL
 
-                - Se PLANO_INDICADO = C, então:
-                    - BONUS_DESTINO: 20GB
-                    - DESCONTO_DESTINO: 00 NFIDEL
+            - Se PLANO_INDICADO = S, então:
+                - BONUS_DESTINO: 20GB + 20GB
+                - DESCONTO_DESTINO: 25 NFIDEL, 28 NFIDEL, 37 NFIDEL, 40 NFIDEL, 41 NFIDEL ou 43 NFIDEL
 
-                - Se PLANO_INDICADO = B, então:
-                    - BONUS_DESTINO: 20GB
-                    - DESCONTO_DESTINO: 00 NFIDEL
+            Se FLG_ESPECIAL = 0:
 
-                - Se PLANO_INDICADO = A, então:
-                    - BONUS_DESTINO: 9GB
-                    - DESCONTO_DESTINO: 5% ou 15%
+            - Se PLANO_INDICADO = C, então:
+                - BONUS_DESTINO: 20GB
+                - DESCONTO_DESTINO: 00 NFIDEL
 
-                - Se PLANO_INDICADO = L, então:
-                    - BONUS_DESTINO: 20GB
-                    - DESCONTO_DESTINO: 17 NFIDEL ou 20 NFIDEL
+            - Se PLANO_INDICADO = B, então:
+                - BONUS_DESTINO: 20GB
+                - DESCONTO_DESTINO: 00 NFIDEL
 
-                - Se PLANO_INDICADO = S, então:
-                    - BONUS_DESTINO: 10GB + 20GB
-                    - DESCONTO_DESTINO: 25 NFIDEL, 28 NFIDEL, 37 NFIDEL, 40 NFIDEL, 41 NFIDEL ou 43 NFIDEL
-            """)
+            - Se PLANO_INDICADO = A, então:
+                - BONUS_DESTINO: 9GB
+                - DESCONTO_DESTINO: 5% ou 15%
 
-        st.subheader('As 10.000 melhores ofertas')
-        st.dataframe(df_ofertas_10000)
+            - Se PLANO_INDICADO = L, então:
+                - BONUS_DESTINO: 20GB
+                - DESCONTO_DESTINO: 17 NFIDEL ou 20 NFIDEL
 
+            - Se PLANO_INDICADO = S, então:
+                - BONUS_DESTINO: 10GB + 20GB
+                - DESCONTO_DESTINO: 25 NFIDEL, 28 NFIDEL, 37 NFIDEL, 40 NFIDEL, 41 NFIDEL ou 43 NFIDEL
+        """)
+    
+    st.title('Dashboard Ofertas')
+
+    st.subheader('As 10.000 melhores ofertas')
+    st.dataframe(df_ofertas_10000)
+
+    st.markdown('#### Filtros')
+    categorias_flg_especial = st.segmented_control('FLG_ESPECIAL', options = df_ofertas['FLG_ESPECIAL'].unique(), default = df_ofertas['FLG_ESPECIAL'].unique(), selection_mode = 'multi')
+    categorias_plano_indicado = st.segmented_control('PLANO_INDICADO', options = df_ofertas['PLANO_INDICADO'].unique(), default = df_ofertas['PLANO_INDICADO'].unique(), selection_mode = 'multi')
+    categorias_bonus_destino = st.segmented_control('BONUS_DESTINO', options = df_ofertas['BONUS_DESTINO'].unique(), default = df_ofertas['BONUS_DESTINO'].unique(), selection_mode = 'multi')
+    categorias_desconto_destino = st.segmented_control('DESCONTO_DESTINO', options = df_ofertas['DESCONTO_DESTINO'].unique(), default = df_ofertas['DESCONTO_DESTINO'].unique(), selection_mode = 'multi')
+    categoria_idade = st.segmented_control('IDADE', options = df_ofertas['IDADE'].unique(), default = df_ofertas['IDADE'].unique(), selection_mode = 'multi')
+    categoria_flg_frescor = st.segmented_control('FLG_FRESCOR', options = df_ofertas['FLG_FRESCOR'].unique(), default = df_ofertas['FLG_FRESCOR'].unique(), selection_mode = 'multi')
+    filtro = (df_ofertas['FLG_ESPECIAL'].isin(categorias_flg_especial) &
+              df_ofertas['PLANO_INDICADO'].isin(categorias_plano_indicado) &
+              df_ofertas['BONUS_DESTINO'].isin(categorias_bonus_destino) &
+              df_ofertas['DESCONTO_DESTINO'].isin(categorias_desconto_destino) &
+              df_ofertas['IDADE'].isin(categoria_idade) &
+              df_ofertas['FLG_FRESCOR'].isin(categoria_flg_frescor))
+
+    col1, col2 = st.columns(2)
+
+    with col1:
         st.subheader('Quantidade de Clientes por UF')
-        st.bar_chart(data = df_ofertas[['UF', 'REGIAO']].value_counts().to_frame().reset_index(), x = 'UF', y = 'count', color = 'REGIAO', x_label = 'UF', y_label = 'Quantidade')
+        st.bar_chart(data = df_ofertas[filtro][['UF', 'REGIAO']].value_counts().to_frame().reset_index(), x = 'UF', y = 'count', color = 'REGIAO', x_label = 'UF', y_label = 'Quantidade')
 
+    with col2:
         st.subheader('Quantidade de Clientes por Região')
-        st.bar_chart(data = df_ofertas[['REGIAO']].value_counts().to_frame().reset_index(), x = 'REGIAO', y = 'count', color = 'REGIAO', x_label = 'Região', y_label = 'Quantidade')
+        st.bar_chart(data = df_ofertas[filtro][['REGIAO']].value_counts().to_frame().reset_index(), x = 'REGIAO', y = 'count', color = 'REGIAO', x_label = 'Região', y_label = 'Quantidade')
 
+    col3, col4 = st.columns(2)
+
+    with col3:
         st.subheader('Quantidade de Clientes por Idade')
-        st.bar_chart(data = df_ofertas[['IDADE']].value_counts().to_frame().reset_index(), x = 'IDADE', y = 'count', x_label = 'Idade', y_label = 'Quantidade')
+        st.bar_chart(data = df_ofertas[filtro][['IDADE']].value_counts().to_frame().reset_index(), x = 'IDADE', y = 'count', x_label = 'Idade', y_label = 'Quantidade')
 
+    with col4:
         st.subheader('Distribuição da Faixa de Recarga nos Últimos 3 Meses')
-        st.bar_chart(data = df_ofertas[['FAIXA_RECARGA']].value_counts().to_frame().reset_index(), x = 'FAIXA_RECARGA', y = 'count', x_label = 'Recarga (em R$)', y_label = 'Quantidade')
+        st.bar_chart(data = df_ofertas[filtro][['FAIXA_RECARGA']].value_counts().to_frame().reset_index(), x = 'FAIXA_RECARGA', y = 'count', x_label = 'Recarga (em R$)', y_label = 'Quantidade')
 
+    col5, col6, col7 = st.columns(3)
+
+    with col5:
         st.subheader('Quantidade de Clientes por Plano Indicado')
-        st.bar_chart(data = df_ofertas[['PLANO_INDICADO']].value_counts().to_frame().reset_index(), x = 'PLANO_INDICADO', y = 'count', x_label = 'Plano Indicado', y_label = 'Quantidade')
+        st.bar_chart(data = df_ofertas[filtro][['PLANO_INDICADO']].value_counts().to_frame().reset_index(), x = 'PLANO_INDICADO', y = 'count', x_label = 'Plano Indicado', y_label = 'Quantidade')
 
+    with col6:
         st.subheader('Quantidade de Clientes por Bônus da Oferta')
-        st.bar_chart(data = df_ofertas[['BONUS_DESTINO']].value_counts().to_frame().reset_index(), x = 'BONUS_DESTINO', y = 'count', x_label = 'Bônus da Oferta', y_label = 'Quantidade')
+        st.bar_chart(data = df_ofertas[filtro][['BONUS_DESTINO']].value_counts().to_frame().reset_index(), x = 'BONUS_DESTINO', y = 'count', x_label = 'Bônus da Oferta', y_label = 'Quantidade')
 
+    with col7:
         st.subheader('Quantidade de Clientes por Desconto da Oferta')
-        st.bar_chart(data = df_ofertas[['DESCONTO_DESTINO']].value_counts().to_frame().reset_index(), x = 'DESCONTO_DESTINO', y = 'count', x_label = 'Desconto da Oferta', y_label = 'Quantidade')
+        st.bar_chart(data = df_ofertas[filtro][['DESCONTO_DESTINO']].value_counts().to_frame().reset_index(), x = 'DESCONTO_DESTINO', y = 'count', x_label = 'Desconto da Oferta', y_label = 'Quantidade')
+
+    st.title('Dashboard Tratativas')
+
+    col8, col9 = st.columns(2)
+
+    with col8:
+        st.subheader('Quantidade de Clientes por Produto')
+        st.altair_chart(
+            alt.Chart(
+                data = df_tratativas[['PRODUTO']].value_counts().to_frame().reset_index(drop = False)
+            ).mark_arc(
+            ).encode(
+                theta = 'count',
+                color = 'PRODUTO'
+            )
+        )
+    
+    with col9:
+        st.subheader('Quantidade de Clientes por Produto Ofertado')
+        st.bar_chart(data = df_tratativas[['PRODUTO', 'PRODUTO OFERTADO']].value_counts().to_frame().reset_index(drop = False), x = 'PRODUTO OFERTADO', y = 'count', color = 'PRODUTO', x_label = 'Produto Ofertado', y_label = 'Quantidade')
