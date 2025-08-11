@@ -6,7 +6,7 @@ def criar_dataframe_ofertas(dataframe_ofertas):
     
     PARÂMETROS:
     - dataframe_ofertas: DATAFRAME DE OFERTAS (EX: base_teste.csv)
-    """    
+    """
 
     df_ofertas = dataframe_ofertas.copy()
 
